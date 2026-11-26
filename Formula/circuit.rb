@@ -1,28 +1,28 @@
 class Circuit < Formula
   desc "Declarative, vendor-neutral network configuration"
   homepage "https://circuit.tako.id"
-  version "1.2.1"
+  version "1.3.0"
   license "BUSL-1.1"
 
   on_macos do
     on_arm do
-      url "https://github.com/takodotid/circuit/releases/download/v1.2.1/circuit-darwin-arm64"
-      sha256 "d56dba773dae8581c0b0e34578d3a3c352fa19cf218dbdb6bad13b07a66d06b0"
+      url "https://github.com/takodotid/circuit/releases/download/v1.3.0/circuit-darwin-arm64"
+      sha256 "205205fea97db3b970bef741d9d507b19568bc6222f6d8550d16ac0a09bcd1f4"
     end
     on_intel do
-      url "https://github.com/takodotid/circuit/releases/download/v1.2.1/circuit-darwin-x64"
-      sha256 "9f55692097794b13cfe2d8c070a1c08d560758f413e9449221eaac142548f593"
+      url "https://github.com/takodotid/circuit/releases/download/v1.3.0/circuit-darwin-x64"
+      sha256 "038b2badeb5d4bed262b0ca940834f360b4579e924b85bb6ea6ed4348f753c27"
     end
   end
 
   on_linux do
     on_arm do
-      url "https://github.com/takodotid/circuit/releases/download/v1.2.1/circuit-linux-arm64"
-      sha256 "92a92ce3e2e9a7d53ae3e98005acf1f4479f247588fe2cb5493b475cf2a70995"
+      url "https://github.com/takodotid/circuit/releases/download/v1.3.0/circuit-linux-arm64"
+      sha256 "76687097c863049b83ecc512ca04092f536fa4a05d075ed290d6a0cd4ca9f3e3"
     end
     on_intel do
-      url "https://github.com/takodotid/circuit/releases/download/v1.2.1/circuit-linux-x64"
-      sha256 "696bfd008da82ff0361f02832a75dbf3a930583c1069ab241bb975e849fbe07e"
+      url "https://github.com/takodotid/circuit/releases/download/v1.3.0/circuit-linux-x64"
+      sha256 "efd6924f8fb1c09e6a4b7d5cb6c0027a081af80e1a2c7373b18c637d7faecb0d"
     end
   end
 
