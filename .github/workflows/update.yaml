@@ -1,0 +1,78 @@
+# Each hour, and by hand: each formula follows its project's latest stable release. The release's SHA256SUMS must be
+# signed: for Tack and Strait, the GitHub attestation of the project's release workflow at that tag; for Circuit, its
+# release key (scripts/circuit-release.allowed_signers). The new formula must install, pass its test and pass brew audit
+# before it is pushed. No secret: the job's GITHUB_TOKEN pushes here only.
+name: update
+on:
+  schedule:
+    - cron: '17 * * * *'
+  workflow_dispatch:
+permissions: {}
+concurrency:
+  group: update
+  cancel-in-progress: false
+defaults:
+  run:
+    shell: bash
+jobs:
+  update:
+    runs-on: ubuntu-26.04
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      # One at a time: each pushes to main.
+      max-parallel: 1
+      matrix:
+        formula: [circuit, tack, strait]
+    steps:
+      # Checks out this tap into the workspace and taps it as takodotid/tap.
+      - uses: Homebrew/actions/setup-homebrew@9adaf5f919d8bcadd00012733acf8d50319d25e3 # main 2026-11-26
+        with:
+          core: false
+          cask: false
+      - name: Latest stable release, signed
+        id: release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          FORMULA: ${{ matrix.formula }}
+        run: |
+          git pull -q --ff-only origin main
+          tag=$(gh release view -R "takodotid/$FORMULA" --json tagName --jq .tagName)
+          [[ $tag =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "the latest release of $FORMULA is $tag, not vX.Y.Z"; exit 1; }
+          if grep -q "/releases/download/$tag/" "Formula/$FORMULA.rb"; then
+            echo "Formula/$FORMULA.rb has $tag already"
+            exit 0
+          fi
+          gh release download -R "takodotid/$FORMULA" "$tag" -p SHA256SUMS -O "$RUNNER_TEMP/SHA256SUMS"
+          if [[ $FORMULA == circuit ]]; then
+            gh release download -R takodotid/circuit "$tag" -p SHA256SUMS.sshsig -O "$RUNNER_TEMP/SHA256SUMS.sshsig"
+            ssh-keygen -Y verify -f scripts/circuit-release.allowed_signers -I circuit-release -n circuit-release \
+              -s "$RUNNER_TEMP/SHA256SUMS.sshsig" < "$RUNNER_TEMP/SHA256SUMS"
+          else
+            gh attestation verify "$RUNNER_TEMP/SHA256SUMS" --repo "takodotid/$FORMULA" \
+              --cert-identity "https://github.com/takodotid/$FORMULA/.github/workflows/release.yaml@refs/tags/$tag"
+          fi
+          scripts/formula.sh "$FORMULA" "${tag#v}" "$RUNNER_TEMP/SHA256SUMS" > "Formula/$FORMULA.rb"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+      - name: Install, test and audit
+        if: steps.release.outputs.tag != ''
+        env:
+          FORMULA: ${{ matrix.formula }}
+          HOMEBREW_NO_AUTO_UPDATE: '1'
+        run: |
+          brew install "takodotid/tap/$FORMULA"
+          brew test "takodotid/tap/$FORMULA"
+          brew audit --strict "takodotid/tap/$FORMULA"
+          brew style "takodotid/tap/$FORMULA"
+      - name: Push
+        if: steps.release.outputs.tag != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          FORMULA: ${{ matrix.formula }}
+          TAG: ${{ steps.release.outputs.tag }}
+        run: |
+          git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+            commit -qm "$FORMULA ${TAG#v}" "Formula/$FORMULA.rb"
+          auth=$(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)
+          git -c http.extraheader="AUTHORIZATION: basic $auth" push -q origin HEAD:main

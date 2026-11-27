@@ -1,7 +1,6 @@
 class Circuit < Formula
   desc "Declarative, vendor-neutral network configuration"
   homepage "https://circuit.tako.id"
-  version "1.3.0"
   license "BUSL-1.1"
 
   on_macos do
