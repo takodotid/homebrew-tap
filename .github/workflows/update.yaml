@@ -1,7 +1,7 @@
-# Each hour, and by hand: the formulas of Tack and Strait follow each project's latest stable release. A release's
-# SHA256SUMS must carry the GitHub attestation of the project's release workflow at that tag. The new formula must
-# install, pass its test and pass brew audit before it is pushed. No secret: the job's GITHUB_TOKEN pushes here only.
-# Circuit's release writes Formula/circuit.rb itself.
+# Each hour, and by hand: each formula follows its project's latest stable release. The release's SHA256SUMS must be
+# signed: for Tack and Strait, the GitHub attestation of the project's release workflow at that tag; for Circuit, its
+# release key (scripts/circuit-release.allowed_signers). The new formula must install, pass its test and pass brew audit
+# before it is pushed. No secret: the job's GITHUB_TOKEN pushes here only.
 name: update
 on:
   schedule:
@@ -24,14 +24,14 @@ jobs:
       # One at a time: each pushes to main.
       max-parallel: 1
       matrix:
-        formula: [tack, strait]
+        formula: [circuit, tack, strait]
     steps:
       # Checks out this tap into the workspace and taps it as takodotid/tap.
       - uses: Homebrew/actions/setup-homebrew@9adaf5f919d8bcadd00012733acf8d50319d25e3 # main 2026-11-26
         with:
           core: false
           cask: false
-      - name: Latest stable release, attested
+      - name: Latest stable release, signed
         id: release
         env:
           GH_TOKEN: ${{ github.token }}
@@ -45,8 +45,14 @@ jobs:
             exit 0
           fi
           gh release download -R "takodotid/$FORMULA" "$tag" -p SHA256SUMS -O "$RUNNER_TEMP/SHA256SUMS"
-          gh attestation verify "$RUNNER_TEMP/SHA256SUMS" --repo "takodotid/$FORMULA" \
-            --cert-identity "https://github.com/takodotid/$FORMULA/.github/workflows/release.yaml@refs/tags/$tag"
+          if [[ $FORMULA == circuit ]]; then
+            gh release download -R takodotid/circuit "$tag" -p SHA256SUMS.sshsig -O "$RUNNER_TEMP/SHA256SUMS.sshsig"
+            ssh-keygen -Y verify -f scripts/circuit-release.allowed_signers -I circuit-release -n circuit-release \
+              -s "$RUNNER_TEMP/SHA256SUMS.sshsig" < "$RUNNER_TEMP/SHA256SUMS"
+          else
+            gh attestation verify "$RUNNER_TEMP/SHA256SUMS" --repo "takodotid/$FORMULA" \
+              --cert-identity "https://github.com/takodotid/$FORMULA/.github/workflows/release.yaml@refs/tags/$tag"
+          fi
           scripts/formula.sh "$FORMULA" "${tag#v}" "$RUNNER_TEMP/SHA256SUMS" > "Formula/$FORMULA.rb"
           echo "tag=$tag" >> "$GITHUB_OUTPUT"
       - name: Install, test and audit

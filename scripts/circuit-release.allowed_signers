@@ -1,0 +1,2 @@
+# Circuit's release key, which signs each release's SHA256SUMS.sshsig: the key in takodotid/circuit src/cli/signing.ts and its installers.
+circuit-release namespaces="circuit-release" ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBFYvLbjJKwTIciNuNZgVLU0Du53aFUYxuywTEG5zshM
