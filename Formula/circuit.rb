@@ -5,23 +5,23 @@ class Circuit < Formula
 
   on_macos do
     on_arm do
-      url "https://github.com/takodotid/circuit/releases/download/v1.3.0/circuit-darwin-arm64"
-      sha256 "205205fea97db3b970bef741d9d507b19568bc6222f6d8550d16ac0a09bcd1f4"
+      url "https://github.com/takodotid/circuit/releases/download/v1.4.0/circuit-darwin-arm64"
+      sha256 "21cffe97952767183b0a5659e77b5fe767bc0ebd69fec3b61952a74ef720fe02"
     end
     on_intel do
-      url "https://github.com/takodotid/circuit/releases/download/v1.3.0/circuit-darwin-x64"
-      sha256 "038b2badeb5d4bed262b0ca940834f360b4579e924b85bb6ea6ed4348f753c27"
+      url "https://github.com/takodotid/circuit/releases/download/v1.4.0/circuit-darwin-x64"
+      sha256 "fbe80431d18b43ba02494f89faea91baf3098ed326fadaf853d6a673f3cef239"
     end
   end
 
   on_linux do
     on_arm do
-      url "https://github.com/takodotid/circuit/releases/download/v1.3.0/circuit-linux-arm64"
-      sha256 "76687097c863049b83ecc512ca04092f536fa4a05d075ed290d6a0cd4ca9f3e3"
+      url "https://github.com/takodotid/circuit/releases/download/v1.4.0/circuit-linux-arm64"
+      sha256 "c22201871747a8799ef8a4c224938a469a2072d6998c234658d7df922176d4f8"
     end
     on_intel do
-      url "https://github.com/takodotid/circuit/releases/download/v1.3.0/circuit-linux-x64"
-      sha256 "efd6924f8fb1c09e6a4b7d5cb6c0027a081af80e1a2c7373b18c637d7faecb0d"
+      url "https://github.com/takodotid/circuit/releases/download/v1.4.0/circuit-linux-x64"
+      sha256 "6341d3702c15365661eaa35b22b4eaf73139b0f3f084110985691895f1544b02"
     end
   end
 
